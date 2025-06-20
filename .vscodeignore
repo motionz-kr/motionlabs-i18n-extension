@@ -1,6 +1,6 @@
 .vscode/
 **/.git
 **/.gitignore
-**/*.vsix
+dist/
 node_modules/
 !node_modules/jsonc-parser/** 
