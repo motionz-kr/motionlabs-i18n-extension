@@ -1,7 +1,7 @@
-const vscode = require('vscode');
-const fs = require('fs');
-const path = require('path');
-const jsonc = require('jsonc-parser');
+const vscode = require("vscode");
+const fs = require("fs");
+const path = require("path");
+const jsonc = require("jsonc-parser");
 
 let translations = {};
 let translationFilePath;
@@ -9,9 +9,9 @@ let activeEditor = vscode.window.activeTextEditor;
 
 const inlineDecorationType = vscode.window.createTextEditorDecorationType({
   after: {
-    margin: '0 0 0 1em',
-    fontStyle: 'italic',
-    color: new vscode.ThemeColor('editorCodeLens.foreground'),
+    margin: "0 0 0 1em",
+    fontStyle: "italic",
+    color: new vscode.ThemeColor("editorCodeLens.foreground"),
   },
   rangeBehavior: vscode.DecorationRangeBehavior.ClosedOpen,
 });
@@ -23,9 +23,12 @@ function updateDecorations() {
 
   const document = activeEditor.document;
   if (
-    !['typescript', 'typescriptreact', 'javascript', 'javascriptreact'].includes(
-      document.languageId,
-    )
+    ![
+      "typescript",
+      "typescriptreact",
+      "javascript",
+      "javascriptreact",
+    ].includes(document.languageId)
   ) {
     activeEditor.setDecorations(inlineDecorationType, []);
     return;
@@ -33,14 +36,18 @@ function updateDecorations() {
 
   const text = document.getText();
   const decorationsArray = [];
-  const regex = /t\(['"]([^'"]+)['"]\)/g;
+  const regex = /t\(([^)]+)\)/g;
+  const keyRegex = /['"`]([^'"`]+)['"`]/;
   let match;
 
   while ((match = regex.exec(text))) {
-    const key = match[1];
+    const innerMatch = match[1].match(keyRegex);
+    if (!innerMatch) continue;
+
+    const key = innerMatch[1];
     const translation = getTranslation(key);
 
-    if (translation && typeof translation.ko === 'string') {
+    if (translation && typeof translation.ko === "string") {
       const translationText = translation.ko;
       const endOfTFunction = match.index + match[0].length;
       const position = document.positionAt(endOfTFunction);
@@ -63,27 +70,27 @@ function updateDecorations() {
 
 // #region Helper Functions
 function getTranslationKeysFirst(key) {
-  const keys = key.split('.');
+  const keys = key.split(".");
   let result = translations;
   for (const k of keys) {
-    if (result && typeof result === 'object' && k in result) {
+    if (result && typeof result === "object" && k in result) {
       result = result[k];
     } else {
       return null;
     }
   }
 
-  if (result && typeof result === 'object') {
+  if (result && typeof result === "object") {
     return result;
   }
-  if (typeof result === 'string') {
+  if (typeof result === "string") {
     return result;
   }
   return null;
 }
 
 function getTranslationLanguageFirst(key) {
-  const keys = key.split('.');
+  const keys = key.split(".");
   const result = {};
 
   for (const lang in translations) {
@@ -92,7 +99,7 @@ function getTranslationLanguageFirst(key) {
       let found = true;
 
       for (const k of keys) {
-        if (value && typeof value === 'object' && k in value) {
+        if (value && typeof value === "object" && k in value) {
           value = value[k];
         } else {
           found = false;
@@ -100,7 +107,7 @@ function getTranslationLanguageFirst(key) {
         }
       }
 
-      if (found && typeof value === 'string') {
+      if (found && typeof value === "string") {
         result[lang] = value;
       }
     }
@@ -113,11 +120,11 @@ function findPositionOfKeyKeysFirst(key) {
   if (!translationFilePath) return null;
 
   try {
-    const text = fs.readFileSync(translationFilePath, 'utf8');
+    const text = fs.readFileSync(translationFilePath, "utf8");
     const tree = jsonc.parseTree(text);
     if (!tree) return null;
 
-    const path = key.split('.');
+    const path = key.split(".");
     const node = jsonc.findNodeAtLocation(tree, path);
 
     if (node && node.parent && node.parent.children) {
@@ -125,7 +132,7 @@ function findPositionOfKeyKeysFirst(key) {
       const keyNode = propertyNode.children[0];
       if (keyNode) {
         const positionAt = (offset) => {
-          const lines = text.substring(0, offset).split('\n');
+          const lines = text.substring(0, offset).split("\n");
           const line = lines.length - 1;
           const character = lines[lines.length - 1].length;
           return new vscode.Position(line, character);
@@ -137,7 +144,7 @@ function findPositionOfKeyKeysFirst(key) {
     }
     return null;
   } catch (e) {
-    console.error('Error finding key position:', e);
+    console.error("Error finding key position:", e);
     return null;
   }
 }
@@ -146,11 +153,11 @@ function findPositionOfKeyLanguageFirst(key) {
   if (!translationFilePath) return null;
 
   try {
-    const text = fs.readFileSync(translationFilePath, 'utf8');
+    const text = fs.readFileSync(translationFilePath, "utf8");
     const tree = jsonc.parseTree(text);
     if (!tree) return null;
 
-    const keyPath = key.split('.');
+    const keyPath = key.split(".");
 
     if (tree.children) {
       for (const langNode of tree.children) {
@@ -163,13 +170,15 @@ function findPositionOfKeyLanguageFirst(key) {
             const keyNode = propertyNode.children[0];
             if (keyNode) {
               const positionAt = (offset) => {
-                const lines = text.substring(0, offset).split('\n');
+                const lines = text.substring(0, offset).split("\n");
                 const line = lines.length - 1;
                 const character = lines[lines.length - 1].length;
                 return new vscode.Position(line, character);
               };
               const startPosition = positionAt(keyNode.offset + 1);
-              const endPosition = positionAt(keyNode.offset + keyNode.length - 1);
+              const endPosition = positionAt(
+                keyNode.offset + keyNode.length - 1
+              );
               return new vscode.Range(startPosition, endPosition);
             }
           }
@@ -178,32 +187,32 @@ function findPositionOfKeyLanguageFirst(key) {
     }
     return null;
   } catch (e) {
-    console.error('Error finding key position:', e);
+    console.error("Error finding key position:", e);
     return null;
   }
 }
 // #endregion
 
 async function loadTranslations() {
-  const config = vscode.workspace.getConfiguration('motionlabs-i18n');
-  const translationFilePattern = config.get('translationFilePath');
+  const config = vscode.workspace.getConfiguration("motionlabs-i18n");
+  const translationFilePattern = config.get("translationFilePath");
 
   if (!translationFilePattern) {
-    vscode.window.showErrorMessage('Translation file path is not configured.');
+    vscode.window.showErrorMessage("Translation file path is not configured.");
     return;
   }
 
   const translationFiles = await vscode.workspace.findFiles(
     translationFilePattern,
-    '**/node_modules/**',
-    1,
+    "**/node_modules/**",
+    1
   );
 
   if (translationFiles.length > 0) {
     translationFilePath = translationFiles[0].fsPath;
   } else {
     vscode.window.showInformationMessage(
-      `No translation file found matching the pattern: ${translationFilePattern}`,
+      `No translation file found matching the pattern: ${translationFilePattern}`
     );
     translationFilePath = undefined;
     translations = {};
@@ -212,12 +221,14 @@ async function loadTranslations() {
   }
 
   try {
-    const data = fs.readFileSync(translationFilePath, 'utf8');
+    const data = fs.readFileSync(translationFilePath, "utf8");
     translations = jsonc.parse(data);
-    console.log('Translations loaded successfully.');
+    console.log("Translations loaded successfully.");
   } catch (error) {
-    console.error('Error loading or parsing translations.json:', error);
-    vscode.window.showErrorMessage(`Failed to load translations: ${error.message}`);
+    console.error("Error loading or parsing translations.json:", error);
+    vscode.window.showErrorMessage(
+      `Failed to load translations: ${error.message}`
+    );
     translations = {};
     translationFilePath = undefined;
   }
@@ -225,10 +236,10 @@ async function loadTranslations() {
 }
 
 function findPositionOfKey(key) {
-  const config = vscode.workspace.getConfiguration('motionlabs-i18n');
-  const structure = config.get('translationFileStructure');
+  const config = vscode.workspace.getConfiguration("motionlabs-i18n");
+  const structure = config.get("translationFileStructure");
 
-  if (structure === 'languageFirst') {
+  if (structure === "languageFirst") {
     return findPositionOfKeyLanguageFirst(key);
   } else {
     return findPositionOfKeyKeysFirst(key);
@@ -236,10 +247,10 @@ function findPositionOfKey(key) {
 }
 
 function getTranslation(key) {
-  const config = vscode.workspace.getConfiguration('motionlabs-i18n');
-  const structure = config.get('translationFileStructure');
+  const config = vscode.workspace.getConfiguration("motionlabs-i18n");
+  const structure = config.get("translationFileStructure");
 
-  if (structure === 'languageFirst') {
+  if (structure === "languageFirst") {
     return getTranslationLanguageFirst(key);
   } else {
     return getTranslationKeysFirst(key);
@@ -247,14 +258,18 @@ function getTranslation(key) {
 }
 
 function activate(context) {
-  console.log('Congratulations, your extension "motionlabs-i18n" is now active!');
+  console.log(
+    'Congratulations, your extension "motionlabs-i18n" is now active!'
+  );
 
   loadTranslations();
 
-  const config = vscode.workspace.getConfiguration('motionlabs-i18n');
-  let translationFilePattern = config.get('translationFilePath');
+  const config = vscode.workspace.getConfiguration("motionlabs-i18n");
+  let translationFilePattern = config.get("translationFilePath");
 
-  let fileWatcher = vscode.workspace.createFileSystemWatcher(translationFilePattern);
+  let fileWatcher = vscode.workspace.createFileSystemWatcher(
+    translationFilePattern
+  );
   fileWatcher.onDidChange(loadTranslations);
   fileWatcher.onDidCreate(loadTranslations);
   fileWatcher.onDidDelete(() => {
@@ -266,17 +281,19 @@ function activate(context) {
 
   vscode.workspace.onDidChangeConfiguration((e) => {
     if (
-      e.affectsConfiguration('motionlabs-i18n.translationFilePath') ||
-      e.affectsConfiguration('motionlabs-i18n.translationFileStructure')
+      e.affectsConfiguration("motionlabs-i18n.translationFilePath") ||
+      e.affectsConfiguration("motionlabs-i18n.translationFileStructure")
     ) {
       loadTranslations();
 
-      if (e.affectsConfiguration('motionlabs-i18n.translationFilePath')) {
+      if (e.affectsConfiguration("motionlabs-i18n.translationFilePath")) {
         // Re-create the file watcher with the new path
         fileWatcher.dispose();
-        const newConfig = vscode.workspace.getConfiguration('motionlabs-i18n');
-        translationFilePattern = newConfig.get('translationFilePath');
-        fileWatcher = vscode.workspace.createFileSystemWatcher(translationFilePattern);
+        const newConfig = vscode.workspace.getConfiguration("motionlabs-i18n");
+        translationFilePattern = newConfig.get("translationFilePath");
+        fileWatcher = vscode.workspace.createFileSystemWatcher(
+          translationFilePattern
+        );
         fileWatcher.onDidChange(loadTranslations);
         fileWatcher.onDidCreate(loadTranslations);
         fileWatcher.onDidDelete(() => {
@@ -309,7 +326,7 @@ function activate(context) {
       }
     },
     null,
-    context.subscriptions,
+    context.subscriptions
   );
 
   vscode.workspace.onDidChangeTextDocument(
@@ -319,38 +336,42 @@ function activate(context) {
       }
     },
     null,
-    context.subscriptions,
+    context.subscriptions
   );
 
   let hoverProvider = vscode.languages.registerHoverProvider(
-    ['typescript', 'typescriptreact', 'javascript', 'javascriptreact'],
+    ["typescript", "typescriptreact", "javascript", "javascriptreact"],
     {
       provideHover(document, position) {
-        const regex = /t\(['"]([^'"]+)['"]\)/g;
-        const range = document.getWordRangeAtPosition(position, regex);
+        const regex = /t\(([^)]+)\)/g;
+        const keyRegex = /['"`]([^'"`]+)['"`]/;
+        const text = document.getText();
+        let match;
 
-        if (range) {
-          const text = document.getText(range);
-          // We need to reset the regex state for each use.
-          const localRegex = new RegExp(regex);
-          const match = localRegex.exec(text);
+        while ((match = regex.exec(text))) {
+          const start = document.positionAt(match.index);
+          const end = document.positionAt(match.index + match[0].length);
+          const range = new vscode.Range(start, end);
 
-          if (match) {
-            const key = match[1];
+          if (range.contains(position)) {
+            const innerMatch = match[1].match(keyRegex);
+            if (!innerMatch) continue;
+
+            const key = innerMatch[1];
             const translation = getTranslation(key);
             if (translation) {
-              const markdownString = new vscode.MarkdownString('', true);
+              const markdownString = new vscode.MarkdownString("", true);
 
-              if (typeof translation === 'object' && translation !== null) {
+              if (typeof translation === "object" && translation !== null) {
                 const lines = [];
                 if (translation.ko) lines.push(`KO: ${translation.ko}`);
                 if (translation.en) lines.push(`EN: ${translation.en}`);
                 if (translation.vi) lines.push(`VI: ${translation.vi}`);
                 if (lines.length > 0) {
-                  markdownString.appendCodeblock(lines.join('\n'), 'text');
+                  markdownString.appendCodeblock(lines.join("\n"), "text");
                 }
-              } else if (typeof translation === 'string') {
-                markdownString.appendCodeblock(translation, 'text');
+              } else if (typeof translation === "string") {
+                markdownString.appendCodeblock(translation, "text");
               }
 
               return new vscode.Hover(markdownString, range);
@@ -359,34 +380,42 @@ function activate(context) {
         }
         return null;
       },
-    },
+    }
   );
   context.subscriptions.push(hoverProvider);
 
   let definitionProvider = vscode.languages.registerDefinitionProvider(
-    ['typescript', 'typescriptreact', 'javascript', 'javascriptreact'],
+    ["typescript", "typescriptreact", "javascript", "javascriptreact"],
     {
       provideDefinition(document, position, token) {
-        const regex = /t\(['"]([^'"]+)['"]\)/g;
-        const range = document.getWordRangeAtPosition(position, regex);
+        const regex = /t\(([^)]+)\)/g;
+        const keyRegex = /['"`]([^'"`]+)['"`]/;
+        const text = document.getText();
+        let match;
 
-        if (range) {
-          const text = document.getText(range);
-          const localRegex = new RegExp(regex);
-          const match = localRegex.exec(text);
+        while ((match = regex.exec(text))) {
+          const start = document.positionAt(match.index);
+          const end = document.positionAt(match.index + match[0].length);
+          const range = new vscode.Range(start, end);
 
-          if (match) {
-            const key = match[1];
+          if (range.contains(position)) {
+            const innerMatch = match[1].match(keyRegex);
+            if (!innerMatch) continue;
+
+            const key = innerMatch[1];
             const keyRangeInJson = findPositionOfKey(key);
 
             if (keyRangeInJson && translationFilePath) {
-              return new vscode.Location(vscode.Uri.file(translationFilePath), keyRangeInJson);
+              return new vscode.Location(
+                vscode.Uri.file(translationFilePath),
+                keyRangeInJson
+              );
             }
           }
         }
         return null;
       },
-    },
+    }
   );
   context.subscriptions.push(definitionProvider);
 }
