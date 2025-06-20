@@ -1,0 +1,50 @@
+{
+  "name": "motionlabs-i18n",
+  "displayName": "Motionlabs i18n",
+  "description": "An i18n extension for Motionlabs projects to streamline the translation workflow.",
+  "publisher": "motionlabs",
+  "version": "0.0.1",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/motionz-kr/motionlabs-i18n-extension.git"
+  },
+  "icon": "images/icon.png",
+  "engines": {
+    "vscode": "^1.82.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "main": "./extension.js",
+  "contributes": {
+    "configuration": {
+      "title": "Motionlabs i18n",
+      "properties": {
+        "motionlabs-i18n.translationFilePath": {
+          "type": "string",
+          "default": "**/locales/translations.json",
+          "description": "The glob pattern to find the translation file (e.g., 'src/locales/translations.json')."
+        },
+        "motionlabs-i18n.translationFileStructure": {
+          "type": "string",
+          "enum": [
+            "keysFirst",
+            "languageFirst"
+          ],
+          "default": "keysFirst",
+          "description": "The structure of the translation file. 'keysFirst': { \"key\": { \"ko\": \"...\" } }, 'languageFirst': { \"ko\": { \"key\": \"...\" } }"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "lint": "eslint .",
+    "pretest": "npm run lint"
+  },
+  "dependencies": {
+    "jsonc-parser": "^3.3.1"
+  }
+}
