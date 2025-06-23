@@ -36,7 +36,9 @@ function updateDecorations() {
 
   const text = document.getText();
   const decorationsArray = [];
-  const regex = /t\(([^)]+)\)/g;
+  const config = vscode.workspace.getConfiguration("motionlabs-i18n");
+  const functionName = config.get("translationFunctionName") || "t";
+  const regex = new RegExp(`\\b${functionName}\\(([^)]+)\\)`, "g");
   const keyRegex = /['"`]([^'"`]+)['"`]/;
   let match;
 
@@ -358,7 +360,9 @@ function activate(context) {
     ["typescript", "typescriptreact", "javascript", "javascriptreact"],
     {
       provideHover(document, position) {
-        const regex = /t\(([^)]+)\)/g;
+        const config = vscode.workspace.getConfiguration("motionlabs-i18n");
+        const functionName = config.get("translationFunctionName") || "t";
+        const regex = new RegExp(`\\b${functionName}\\(([^)]+)\\)`, "g");
         const keyRegex = /['"`]([^'"`]+)['"`]/;
         const text = document.getText();
         let match;
@@ -403,7 +407,9 @@ function activate(context) {
     ["typescript", "typescriptreact", "javascript", "javascriptreact"],
     {
       provideDefinition(document, position, token) {
-        const regex = /t\(([^)]+)\)/g;
+        const config = vscode.workspace.getConfiguration("motionlabs-i18n");
+        const functionName = config.get("translationFunctionName") || "t";
+        const regex = new RegExp(`\\b${functionName}\\(([^)]+)\\)`, "g");
         const keyRegex = /['"`]([^'"`]+)['"`]/;
         const text = document.getText();
         let match;

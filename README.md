@@ -13,13 +13,13 @@ See the translation for a key displayed directly in your code as a subtle inline
 **Before:**
 
 ```typescript
-const title = t('page.home.title');
+const title = t("page.home.title");
 ```
 
 **After:**
 
 ```typescript
-const title = t('page.home.title'); // 홈 화면
+const title = t("page.home.title"); // 홈 화면
 ```
 
 ### 2. Multi-language Hover Information
@@ -47,19 +47,21 @@ Easily point the extension to your project's translation file, no matter its loc
 ## Quick Setup
 
 1.  **Install the extension.**
-2.  **Configure the extension settings.** Open your VS Code settings (`Ctrl/Cmd + ,`) and search for **"Motionlabs i18n"**. You will find two settings to configure:
+2.  **Configure the extension settings.** Open your VS Code settings (`Ctrl/Cmd + ,`) and search for **"Motionlabs i18n"**. You will find three settings to configure:
 
     - **Translation File Path**: Set the [glob pattern](https://code.visualstudio.com/api/references/vscode-api#GlobPattern) for your translation file's location.
     - **Translation File Structure**: Choose the structure of your JSON file.
       - `keysFirst`: Use this if your file looks like `{ "key": { "en": "..." } }`.
       - `languageFirst`: Use this if your file looks like `{ "en": { "key": "..." } }`.
+    - **Translation Function Name**: (Optional) Set the function name to detect translation keys. Default is `t`. If you use a custom function (e.g., `customT('key')`), set this to your function name.
 
-    **Example `.vscode/settings.json**:\*\*
+    **Example `.vscode/settings.json`**:
 
     ```json
     {
       "motionlabs-i18n.translationFilePath": "src/locales/translations.json",
-      "motionlabs-i18n.translationFileStructure": "languageFirst"
+      "motionlabs-i18n.translationFileStructure": "languageFirst",
+      "motionlabs-i18n.translationFunctionName": "t"
     }
     ```
 
@@ -74,3 +76,15 @@ Easily point the extension to your project's translation file, no matter its loc
     - In the new window, open any project that contains a translation file.
     - Configure the `motionlabs-i18n.translationFilePath` in the settings of the new window to match the project's structure.
     - Open a code file and verify that all features (inline decoration, hover, go-to-definition) work correctly.
+
+## Advanced: Custom Translation Function Name
+
+By default, this extension detects translation keys in the form of `t('key')`. If your project uses a different function name (e.g., `customT('key')`), you can configure this in your settings:
+
+```json
+{
+  "motionlabs-i18n.translationFunctionName": "customT"
+}
+```
+
+Only the exact function name you specify will be detected (e.g., `customT('key')`). Functions ending with `t` (like `handleClearInput('key')`) will **not** be detected.

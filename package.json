@@ -36,6 +36,11 @@
           ],
           "default": "keysFirst",
           "description": "The structure of the translation file. 'keysFirst': { \"key\": { \"ko\": \"...\" } }, 'languageFirst': { \"ko\": { \"key\": \"...\" } }"
+        },
+        "motionlabs-i18n.translationFunctionName": {
+          "type": "string",
+          "default": "t",
+          "description": "The function name to detect for translation keys (e.g., t, customT, etc.)"
         }
       }
     }
