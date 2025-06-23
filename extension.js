@@ -63,6 +63,21 @@ function updateDecorations() {
         },
       };
       decorationsArray.push(decoration);
+    } else if (!translation || typeof translation.ko !== "string") {
+      const endOfTFunction = match.index + match[0].length;
+      const position = document.positionAt(endOfTFunction);
+      const range = new vscode.Range(position, position);
+      const decoration = {
+        range,
+        renderOptions: {
+          after: {
+            contentText: `  // 키가 존재하지 않습니다.`,
+            color: "red",
+            fontWeight: "bold",
+          },
+        },
+      };
+      decorationsArray.push(decoration);
     }
   }
   activeEditor.setDecorations(inlineDecorationType, decorationsArray);
