@@ -418,6 +418,16 @@ function activate(context) {
     }
   );
   context.subscriptions.push(definitionProvider);
+
+  vscode.workspace.onDidSaveTextDocument((document) => {
+    const config = vscode.workspace.getConfiguration("motionlabs-i18n");
+    const translationFilePattern = config.get("translationFilePath");
+    // '**/' 패턴이 있으면 제거하고 endsWith로 비교
+    const patternFileName = translationFilePattern.replace(/^\*\*\//, "");
+    if (document.fileName.endsWith(patternFileName)) {
+      loadTranslations();
+    }
+  });
 }
 
 function deactivate() {
