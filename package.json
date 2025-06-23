@@ -3,7 +3,7 @@
   "displayName": "Motionlabs i18n",
   "description": "An i18n extension for Motionlabs projects to streamline the translation workflow.",
   "publisher": "motionlabs",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "repository": {
     "type": "git",
     "url": "https://github.com/motionz-kr/motionlabs-i18n-extension.git"
